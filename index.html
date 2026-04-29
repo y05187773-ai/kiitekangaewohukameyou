@@ -6,7 +6,6 @@
     <title>６年国語「聞いて、考えを深めよう」学習ナビ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- PDF生成ライブラリ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -23,7 +22,6 @@
             overflow: hidden;
         }
 
-        /* ボタン：視差効果（立体感） */
         .btn-3d {
             transition: all 0.1s;
             position: relative;
@@ -61,7 +59,6 @@
             display: flex;
             flex-direction: column;
             border: 2px solid #e2e8f0;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.05);
         }
 
         textarea, input[type="text"] {
@@ -70,7 +67,6 @@
             padding: 0.75rem;
             font-size: 1rem;
             background: #fdfdfd;
-            width: 100%;
         }
 
         .nav-button {
@@ -80,20 +76,19 @@
             align-items: center;
             color: #a0aec0;
             cursor: pointer;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: bold;
         }
         .nav-button.active { color: #38a169; }
         .icon-circle {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: #edf2f7;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 2px;
-            transition: 0.2s;
         }
         .nav-button.active .icon-circle {
             background: #48bb78;
@@ -109,18 +104,15 @@
             margin-top: 10px;
         }
 
-        /* 隠しテンプレート（PDF生成用：A4比率） */
         #pdf-template {
             position: absolute;
             left: -9999px;
             top: 0;
-            width: 800px; /* キャプチャ用の基準幅 */
+            width: 800px;
             background: white;
             padding: 40px;
-            color: #000;
         }
 
-        /* ローディング表示 */
         #loading-overlay {
             display: none;
             position: fixed;
@@ -130,8 +122,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            color: #2f855a;
         }
     </style>
 </head>
@@ -142,10 +132,9 @@
         PDFを作成しています...
     </div>
 
-    <!-- ヘッダー -->
     <header class="bg-white border-b px-4 py-2 flex items-center justify-between z-10 shadow-sm">
         <div class="flex items-center gap-2">
-            <span class="text-xl">👂</span>
+            <span class="text-xl">📝</span>
             <input type="text" id="student-name" placeholder="なまえを入力" class="w-32 md:w-48 text-sm px-2 py-1 border rounded focus:border-green-500 outline-none" oninput="saveAll()">
         </div>
         <div class="flex gap-2">
@@ -158,119 +147,154 @@
     </header>
 
     <main class="flex-1 overflow-hidden relative">
-        <!-- STEP 1: 計画 -->
         <section id="step-1" class="step-content active">
+            <div class="card border-t-8 border-t-yellow-400">
+                <h2 class="font-bold text-yellow-700 mb-3 text-lg">一．この学習の進め方</h2>
+                <div class="space-y-4 flex flex-col flex-1 overflow-y-auto">
+                    <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+                        <p class="font-bold text-yellow-800 text-center mb-4 leading-relaxed">🎯 相手の思いを引き出し、<br>自分の考えを広げたり深めたりしよう</p>
+                        <div class="space-y-4 text-[0.85rem] text-yellow-900 font-medium">
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs">1</span>
+                                <p><strong>計画を立てる：</strong> インタビューする相手と、知りたい「目的」を決めます。</p>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs">2</span>
+                                <p><strong>準備する：</strong> 事実だけでなく「きっかけ」や「思い」を聞く質問を考えます。</p>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs">3</span>
+                                <p><strong>聞き取る：</strong> 大切な言葉をメモし、言い換えて確かめながら聞きます。</p>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs">4</span>
+                                <p><strong>まとめる：</strong> 相手の考えと自分の考えをくらべて、変化を見つけます。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="setStep(2)" class="btn-3d w-full py-4 bg-yellow-500 text-white font-bold rounded-2xl text-lg shadow-[0_4px_0_#b45309]">
+                        確認して 計画にすすむ
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="step-2" class="step-content">
             <div class="card border-t-8 border-t-green-400">
-                <h2 class="font-bold text-green-700 mb-3 text-lg">一．インタビューの計画</h2>
+                <h2 class="font-bold text-green-700 mb-3 text-lg">二．だれに何を聞く？</h2>
                 <div class="space-y-4 flex flex-col flex-1 overflow-y-auto">
                     <div>
-                        <label class="text-xs font-bold text-gray-500 mb-1 block">相手の名前</label>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">インタビューの相手</label>
                         <input type="text" id="target" placeholder="例：地域ボランティアの宮田さん" oninput="saveAll()">
                     </div>
                     <div class="flex-1 flex flex-col">
                         <label class="text-xs font-bold text-gray-500 mb-1 block">知りたいこと（目的）</label>
-                        <textarea id="goal" class="flex-1" placeholder="例：どんな思いで活動しているか知りたい。" oninput="saveAll()"></textarea>
+                        <textarea id="goal" class="flex-1" placeholder="その人が取り組んでいることの「きっかけ」や「大切にしていること」を書きましょう。" oninput="saveAll()"></textarea>
                     </div>
                     <div class="help-box">
-                        <p class="text-[10px] font-bold text-green-700 mb-2">🆘 おたすけヒント</p>
+                        <p class="text-[10px] font-bold text-green-700 mb-2">🆘 書き出しのヒント</p>
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="addText('goal', '活動を始めたきっかけを知りたい。')" class="btn-3d text-[10px] bg-white border border-green-200 px-3 py-1.5 rounded-lg">きっかけ</button>
-                            <button onclick="addText('goal', '一番大切にしている思いを知りたい。')" class="btn-3d text-[10px] bg-white border border-green-200 px-3 py-1.5 rounded-lg">大切な思い</button>
+                            <button onclick="addText('goal', '活動を始めたきっかけと、その時の思いを知りたい。')" class="btn-3d text-[10px] bg-white border border-green-200 px-3 py-1.5 rounded-lg">きっかけと思いは？</button>
+                            <button onclick="addText('goal', '活動を続けるための工夫や、一番うれしい時を知りたい。')" class="btn-3d text-[10px] bg-white border border-green-200 px-3 py-1.5 rounded-lg">工夫や喜びは？</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- STEP 2: 準備 -->
-        <section id="step-2" class="step-content">
+        <section id="step-3" class="step-content">
             <div class="card border-t-8 border-t-blue-400">
-                <h2 class="font-bold text-blue-700 mb-3 text-lg">二．質問の準備</h2>
+                <h2 class="font-bold text-blue-700 mb-2 text-lg">三．質問を考えよう</h2>
+                <p class="text-[0.7rem] text-blue-500 font-bold mb-3">★「はい/いいえ」で終わらない質問を工夫しましょう</p>
                 <div class="flex-1 overflow-y-auto pr-1" id="question-list"></div>
                 <button onclick="addQuestion()" class="btn-3d mt-3 w-full py-3 bg-blue-50 text-blue-600 font-bold rounded-xl border border-blue-200">＋ 質問をふやす</button>
                 <div class="help-box border-blue-200 bg-blue-50">
-                    <p class="text-[10px] font-bold text-blue-700 mb-1">🆘 質問のタネ</p>
+                    <p class="text-[10px] font-bold text-blue-700 mb-2">🆘 教科書のポイント</p>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="addQuestion('一番うれしいことは何ですか？')" class="btn-3d text-[10px] bg-white border border-blue-200 px-3 py-1.5 rounded-lg">喜び</button>
-                        <button onclick="addQuestion('工夫や苦労していることは何ですか？')" class="btn-3d text-[10px] bg-white border border-blue-200 px-3 py-1.5 rounded-lg">工夫・苦労</button>
+                        <button onclick="addQuestion('なぜ、この活動を始めようと思ったのですか？')" class="btn-3d text-[10px] bg-white border border-blue-200 px-3 py-1.5 rounded-lg">「きっかけ」を聞く</button>
+                        <button onclick="addQuestion('活動をしていて、一番うれしいのはどんな時ですか？')" class="btn-3d text-[10px] bg-white border border-blue-200 px-3 py-1.5 rounded-lg">「喜び」を聞く</button>
+                        <button onclick="addQuestion('続けていくために、どのような工夫をしていますか？')" class="btn-3d text-[10px] bg-white border border-blue-200 px-3 py-1.5 rounded-lg">「工夫」を聞く</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- STEP 3: 実践 -->
-        <section id="step-3" class="step-content">
+        <section id="step-4" class="step-content">
             <div class="flex flex-col h-full gap-3">
-                <div class="h-1/3 min-h-[120px]">
-                    <div class="card border-t-4 border-t-orange-400 overflow-hidden">
-                        <p class="text-xs font-bold text-gray-400 mb-2">質問をえらぶ</p>
-                        <div id="q-selector" class="flex gap-2 overflow-x-auto pb-2"></div>
+                <div class="h-1/3 min-h-[140px]">
+                    <div class="card border-t-4 border-t-orange-400">
+                        <p class="text-[0.7rem] font-bold text-gray-400 mb-2">質問を選んでメモをとる</p>
+                        <div id="q-selector" class="flex gap-2 overflow-x-auto pb-2 min-h-[50px]"></div>
+                        <div class="help-box bg-orange-50 border-orange-200 p-2 mt-auto">
+                            <p class="text-[9px] font-bold text-orange-700">👂 聞き方のコツ：<strong>「つまり〜ということですか？」</strong>と言い換えて確認しよう</p>
+                        </div>
                     </div>
                 </div>
                 <div class="flex-1 flex flex-col">
                     <div class="card border-t-8 border-t-rose-400">
                         <div class="flex justify-between items-center mb-2">
-                            <h2 id="active-q-label" class="text-sm font-bold text-rose-600 truncate mr-2">質問を選んでね</h2>
-                            <div id="timer" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">00:00</div>
+                            <h2 id="active-q-label" class="text-sm font-bold text-rose-600 truncate mr-2 italic">準備ページで質問を作ってね</h2>
+                            <div id="timer" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded shadow-inner">00:00</div>
                         </div>
-                        <textarea id="memo-field" class="flex-1 text-lg" placeholder="メモを入力..." oninput="saveMemo()"></textarea>
+                        <textarea id="memo-field" class="flex-1 text-lg" placeholder="「事実」と「思い」を分けてメモするとわかりやすいよ。" oninput="saveMemo()"></textarea>
                         <button onclick="toggleTimer()" id="t-btn" class="btn-3d mt-2 bg-rose-500 text-white py-2 rounded-xl text-xs font-bold">タイマー開始</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- STEP 4: まとめ -->
-        <section id="step-4" class="step-content">
+        <section id="step-5" class="step-content">
             <div class="card border-t-8 border-t-indigo-500">
-                <h2 class="font-bold text-indigo-700 mb-3 text-lg">四．まとめ</h2>
+                <h2 class="font-bold text-indigo-700 mb-3 text-lg">五．考えを深めよう</h2>
                 <div class="flex-1 flex flex-col gap-4 overflow-y-auto">
                     <div class="flex flex-col flex-1 min-h-[120px]">
-                        <label class="text-xs font-bold text-gray-500 mb-1">💡 わかったこと</label>
-                        <textarea id="summary-result" class="flex-1" oninput="saveAll()"></textarea>
+                        <label class="text-xs font-bold text-gray-500 mb-1">💡 わかったこと・相手の思い</label>
+                        <textarea id="summary-result" class="flex-1" placeholder="インタビューを通して知った、相手の強い願いや工夫をまとめよう。" oninput="saveAll()"></textarea>
                     </div>
                     <div class="flex flex-col flex-1 min-h-[120px]">
                         <label class="text-xs font-bold text-gray-500 mb-1">🌱 自分の考えの変化</label>
-                        <textarea id="summary-change" class="flex-1" oninput="saveAll()"></textarea>
-                        <button onclick="addText('summary-change', '前は〜と思っていましたが、話を聞いて〜と考えるようになりました。')" class="btn-3d text-[9px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg font-bold mt-2 self-start">文頭ヒント</button>
+                        <textarea id="summary-change" class="flex-1" placeholder="自分の経験とくらべて、新しく気づいたことや、これからやってみたいことは？" oninput="saveAll()"></textarea>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="addText('summary-change', 'お話を聞く前は〜と思っていましたが、今は〜と考えるようになりました。')" class="btn-3d text-[9px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-2 rounded-lg font-bold">文頭ヒント</button>
+                        </div>
                     </div>
                 </div>
                 <button onclick="generateDirectPDF()" class="btn-3d w-full bg-green-600 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg text-lg flex items-center justify-center gap-2">
-                    📄 報告書を保存する（PDF）
+                    📄 報告書を保存（PDF）
                 </button>
             </div>
         </section>
     </main>
 
-    <nav class="bg-white border-t flex justify-around py-3 pb-8 shadow-inner z-10">
-        <div onclick="setStep(1)" class="nav-button active" id="nb1"><div class="icon-circle">1</div>計画</div>
-        <div onclick="setStep(2)" class="nav-button" id="nb2"><div class="icon-circle">2</div>準備</div>
-        <div onclick="setStep(3)" class="nav-button" id="nb3"><div class="icon-circle">3</div>実践</div>
-        <div onclick="setStep(4)" class="nav-button" id="nb4"><div class="icon-circle">4</div>まとめ</div>
+    <nav class="bg-white border-t flex justify-around py-2 pb-6 shadow-inner z-10 shrink-0">
+        <div onclick="setStep(1)" class="nav-button active" id="nb1"><div class="icon-circle">1</div>進め方</div>
+        <div onclick="setStep(2)" class="nav-button" id="nb2"><div class="icon-circle">2</div>計画</div>
+        <div onclick="setStep(3)" class="nav-button" id="nb3"><div class="icon-circle">3</div>準備</div>
+        <div onclick="setStep(4)" class="nav-button" id="nb4"><div class="icon-circle">4</div>実践</div>
+        <div onclick="setStep(5)" class="nav-button" id="nb5"><div class="icon-circle">5</div>まとめ</div>
     </nav>
 
-    <!-- PDF生成用の非表示テンプレート（型） -->
     <div id="pdf-template">
-        <div style="border-bottom: 2px solid #2f855a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div style="border-bottom: 3px solid #2f855a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
             <h1 style="font-size: 24pt; margin: 0; font-weight: bold; color: #2f855a;">インタビュー報告書</h1>
-            <p style="font-size: 12pt; margin: 0; padding: 0 10px;">なまえ：<span id="pdf-name"></span></p>
+            <p style="font-size: 13pt; margin: 0;">氏名：<span id="pdf-name" style="padding-left: 10px;"></span></p>
         </div>
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-            <h2 style="font-size: 14pt; margin: 0 0 10px 0; color: #4a5568;">一．計画</h2>
-            <p style="margin: 5px 0;"><strong>【相手】</strong> <span id="pdf-target"></span></p>
-            <p style="margin: 5px 0;"><strong>【目的】</strong> <span id="pdf-goal"></span></p>
+        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <h2 style="font-size: 14pt; margin: 0 0 10px 0; color: #4a5568;">一．インタビューの計画</h2>
+            <p style="margin: 5px 0; font-size: 11pt;"><strong>【相手】</strong> <span id="pdf-target"></span></p>
+            <p style="margin: 5px 0; font-size: 11pt;"><strong>【目的】</strong> <span id="pdf-goal"></span></p>
         </div>
-        <div style="border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-            <h2 style="font-size: 14pt; margin: 0 0 10px 0; color: #2f855a; border-left: 5px solid #48bb78; padding-left: 10px;">二．聞き取りの記録</h2>
-            <div id="pdf-records" style="font-size: 11pt;"></div>
+        <div style="border: 1.5px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <h2 style="font-size: 14pt; margin: 0 0 10px 0; color: #2f855a; border-left: 6px solid #48bb78; padding-left: 12px; font-weight: bold;">二．聞き取りの記録</h2>
+            <div id="pdf-records" style="font-size: 11pt; line-height: 1.6;"></div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div style="border: 1px solid #cbd5e0; padding: 15px; border-radius: 8px; background: #ebf8ff;">
-                <h3 style="font-size: 12pt; margin: 0 0 10px 0; color: #2b6cb0;">三．わかったこと</h3>
+            <div style="border: 1.5px solid #cbd5e0; padding: 15px; border-radius: 10px; background: #ebf8ff;">
+                <h3 style="font-size: 12pt; margin: 0 0 10px 0; color: #2b6cb0; font-weight: bold;">三．わかったこと・思い</h3>
                 <p id="pdf-result" style="font-size: 10.5pt; white-space: pre-wrap; margin: 0;"></p>
             </div>
-            <div style="border: 1px solid #cbd5e0; padding: 15px; border-radius: 8px; background: #fff5f7;">
-                <h3 style="font-size: 12pt; margin: 0 0 10px 0; color: #9b2c2c;">四．考えの変化</h3>
+            <div style="border: 1.5px solid #cbd5e0; padding: 15px; border-radius: 10px; background: #fff5f7;">
+                <h3 style="font-size: 12pt; margin: 0 0 10px 0; color: #9b2c2c; font-weight: bold;">四．自分の考えの変化</h3>
                 <p id="pdf-change" style="font-size: 10.5pt; white-space: pre-wrap; margin: 0;"></p>
             </div>
         </div>
@@ -291,9 +315,8 @@
 
         let timer = { interval: null, seconds: 0, running: false };
 
-        // 初期化
         window.onload = () => {
-            const saved = localStorage.getItem('interview_loilo_v10');
+            const saved = localStorage.getItem('interview_loilo_final_v1');
             if (saved) {
                 state = JSON.parse(saved);
                 document.getElementById('student-name').value = state.name || "";
@@ -301,18 +324,19 @@
                 document.getElementById('goal').value = state.goal || "";
                 document.getElementById('summary-result').value = state.result || "";
                 document.getElementById('summary-change').value = state.change || "";
+                renderQuestions();
+                setStep(state.step || 1);
             } else {
                 for(let i=0; i<3; i++) addQuestion();
+                setStep(1);
             }
-            renderQuestions();
-            setStep(state.step || 1);
         };
 
         function setStep(n) {
             state.step = n;
             document.querySelectorAll('.step-content').forEach((el, idx) => el.classList.toggle('active', idx + 1 === n));
             document.querySelectorAll('.nav-button').forEach((btn, idx) => btn.classList.toggle('active', idx + 1 === n));
-            if (n === 3) renderQSelector();
+            if (n === 4) renderQSelector();
             saveAll();
         }
 
@@ -325,13 +349,14 @@
 
         function renderQuestions() {
             const container = document.getElementById('question-list');
+            if(!container) return;
             container.innerHTML = "";
             state.questions.forEach((q, i) => {
                 const div = document.createElement('div');
                 div.className = "flex gap-2 mb-2 items-center";
                 div.innerHTML = `<span class="font-bold text-blue-500 w-4">${i+1}</span>
                     <input type="text" class="flex-1 p-2 border rounded" value="${q.text}" oninput="updateQ('${q.id}', this.value)">
-                    <button onclick="removeQ('${q.id}')" class="text-red-400 px-2">×</button>`;
+                    <button onclick="removeQ('${q.id}')" class="text-red-400 px-2 font-bold">×</button>`;
                 container.appendChild(div);
             });
         }
@@ -351,22 +376,25 @@
 
         function renderQSelector() {
             const container = document.getElementById('q-selector');
+            if(!container) return;
             container.innerHTML = "";
             state.questions.forEach((q, i) => {
                 if (!q.text) return;
                 const btn = document.createElement('div');
-                btn.className = `btn-3d shrink-0 px-4 py-2 rounded-xl border-2 text-sm font-bold ${state.activeQId === q.id ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-gray-200 text-gray-500'}`;
+                btn.className = `btn-3d shrink-0 px-4 py-2 rounded-xl border-2 text-xs font-bold ${state.activeQId === q.id ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-gray-200 text-gray-500'}`;
                 btn.innerText = `問${i+1}`;
                 btn.onclick = () => selectQ(q.id);
                 container.appendChild(btn);
             });
-            if (!state.activeQId && state.questions.length > 0) selectQ(state.questions[0].id);
+            if (!state.activeQId && state.questions.some(q => q.text)) {
+                selectQ(state.questions.find(q => q.text).id);
+            }
         }
 
         function selectQ(id) {
             state.activeQId = id;
             const q = state.questions.find(item => item.id === id);
-            document.getElementById('active-q-label').innerText = q ? `💬 問：${q.text}` : "選んでね";
+            document.getElementById('active-q-label').innerText = q ? `💬 問${state.questions.indexOf(q)+1}：${q.text}` : "準備ページで質問を作ってね";
             document.getElementById('memo-field').value = state.memos[id] || "";
             renderQSelector();
         }
@@ -401,7 +429,7 @@
             state.goal = document.getElementById('goal').value;
             state.result = document.getElementById('summary-result').value;
             state.change = document.getElementById('summary-change').value;
-            localStorage.setItem('interview_loilo_v10', JSON.stringify(state));
+            localStorage.setItem('interview_loilo_final_v1', JSON.stringify(state));
         }
 
         function addText(id, txt) {
@@ -411,13 +439,11 @@
             saveAll();
         }
 
-        // --- PDF生成ロジック（jsPDF + html2canvas） ---
         async function generateDirectPDF() {
             saveAll();
             const loading = document.getElementById('loading-overlay');
             loading.style.display = 'flex';
 
-            // テンプレートにデータを流し込む
             document.getElementById('pdf-name').innerText = state.name || "（未記入）";
             document.getElementById('pdf-target').innerText = state.target || "（未入力）";
             document.getElementById('pdf-goal').innerText = state.goal || "（未入力）";
@@ -427,60 +453,44 @@
             let recHTML = "";
             state.questions.forEach((q, i) => {
                 if (!q.text.trim()) return;
-                recHTML += `<div style="margin-bottom:10px; border-bottom: 1px dotted #ccc; padding-bottom:5px;">
-                    <p style="font-weight:bold; color:#2f855a; margin:0;">問${i+1}．${q.text}</p>
-                    <p style="margin:2px 0 0 20px;">答：${state.memos[q.id] || '（なし）'}</p>
+                recHTML += `<div style="margin-bottom:12px; border-bottom: 1px dotted #ccc; padding-bottom:6px;">
+                    <p style="font-weight:bold; color:#2f855a; margin:0; font-size:11pt;">問${i+1}．${q.text}</p>
+                    <p style="margin:4px 0 0 20px; font-size:10.5pt; color:#333;">答：${state.memos[q.id] || '（記録なし）'}</p>
                 </div>`;
             });
             document.getElementById('pdf-records').innerHTML = recHTML;
 
-            // html2canvasで画像化
             const template = document.getElementById('pdf-template');
             
             try {
-                const canvas = await html2canvas(template, {
-                    scale: 2, // 高解像度
-                    useCORS: true,
-                    logging: false
-                });
-
+                const canvas = await html2canvas(template, { scale: 2 });
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-                
-                const finalWidth = imgWidth * ratio;
-                const finalHeight = imgHeight * ratio;
-                const x = (pdfWidth - finalWidth) / 2;
-                const y = 0;
-
-                pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
-                pdf.save(`インタビュー報告書_${state.name || '学習記録'}.pdf`);
+                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+                pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width * ratio, canvas.height * ratio);
+                pdf.save(`インタビュー報告書_${state.name || '6年'}.pdf`);
             } catch (err) {
-                alert("PDFの作成に失敗しました。ブラウザの設定を確認してください。");
-                console.error(err);
+                alert("PDF作成に失敗しました。");
             } finally {
                 loading.style.display = 'none';
             }
         }
 
         function exportJSON() {
-            const blob = new Blob([localStorage.getItem('interview_loilo_v10')], { type: 'application/json' });
+            const blob = new Blob([localStorage.getItem('interview_loilo_final_v1')], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `インタビューデータ.json`;
+            a.download = `インタビュー記録_${state.name || 'data'}.json`;
             a.click();
         }
 
         function importJSON(e) {
             const reader = new FileReader();
             reader.onload = (re) => {
-                localStorage.setItem('interview_loilo_v10', re.target.result);
+                localStorage.setItem('interview_loilo_final_v1', re.target.result);
                 location.reload();
             };
             reader.readAsText(e.target.files[0]);
