@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聞いて、考えを深めよう - インタビュー支援アプリ</title>
+    <style>
+        :root {
+            --primary-color: #4caf50;
+            --secondary-color: #e8f5e9;
+            --accent-color: #ff9800;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: #f0f4f0;
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .step-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            background: var(--secondary-color);
+            padding: 10px;
+            border-radius: 50px;
+        }
+
+        .step-btn {
+            border: none;
+            background: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 25px;
+            font-weight: bold;
+            color: #666;
+            transition: 0.3s;
+        }
+
+        .step-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .hint {
+            font-size: 0.9em;
+            color: #666;
+            background: #fff9c4;
+            padding: 10px;
+            border-left: 5px solid #fbc02d;
+            margin: 10px 0;
+        }
+
+        .btn-add {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .question-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .question-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .save-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .print-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        @media print {
+            .step-container, .btn-add, .save-banner, .print-btn, .step-btn {
+                display: none;
+            }
+            .content-section {
+                display: block !important;
+                margin-bottom: 40px;
+            }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>聞いて、考えを深めよう</h1>
+    
+    <div class="step-container">
+        <button class="step-btn active" onclick="showStep(1)">1. 相手を決める</button>
+        <button class="step-btn" onclick="showStep(2)">2. 質問の準備</button>
+        <button class="step-btn" onclick="showStep(3)">3. インタビューメモ</button>
+        <button class="step-btn" onclick="showStep(4)">4. ふりかえり</button>
+    </div>
+
+    <div id="step1" class="content-section active">
+        <div class="input-group">
+            <label>インタビューする相手はだれですか？</label>
+            <input type="text" id="target-person" placeholder="例：学校ボランティアの宮田さん">
+        </div>
+        <div class="input-group">
+            <label>その人を選んだ理由（知りたいこと）は何ですか？</label>
+            <textarea id="target-reason" placeholder="例：いつも花壇をきれいにしてくれている理由を知りたい。"></textarea>
+        </div>
+        <div class="hint">
+            💡 <strong>アドバイス：</strong> 学校をよりよくするために、いろいろな立場の人に話を聞いてみよう。
+        </div>
+    </div>
+
+    <div id="step2" class="content-section">
+        <label>聞きたい質問リスト</label>
+        <div id="question-area">
+            <div class="question-item">
+                <input type="text" class="q-input" placeholder="質問1：いつから活動しているんですか？">
+            </div>
+        </div>
+        <button class="btn-add" onclick="addQuestion()">＋ 質問を追加する</button>
+        
+        <div class="hint" style="margin-top:20px;">
+            💡 <strong>アドバイス：</strong> 相手が答えやすいように、「はい/いいえ」で終わらない質問も考えてみよう。予想される答えも考えておくといいですよ。
+        </div>
+    </div>
+
+    <div id="step3" class="content-section">
+        <div class="input-group">
+            <label>インタビュー中のメモ</label>
+            <textarea id="interview-memo" placeholder="相手が話した大切な言葉や、驚いたことをメモしましょう。"></textarea>
+        </div>
+        <div class="hint">
+            💡 <strong>コツ：</strong> 全部の言葉を書きとめるのは大変です。キーワードや、自分の心が動いた言葉をメモしましょう。ICレコーダーを併用するのも良いですね。
+        </div>
+    </div>
+
+    <div id="step4" class="content-section">
+        <div class="input-group">
+            <label>相手の考え・思い（わかったこと）</label>
+            <textarea id="their-thought" placeholder="インタビューを通してわかった、相手の大切にしていることは何ですか？"></textarea>
+        </div>
+        <div class="input-group">
+            <label>自分の考えとの比較・自分の変化</label>
+            <textarea id="my-change" placeholder="話を聞く前と後で、自分の考えはどう変わりましたか？共通点や違いを書きましょう。"></textarea>
+        </div>
+        <button class="print-btn" onclick="window.print()">学習シートとして印刷・保存する</button>
+    </div>
+
+</div>
+
+<div class="save-banner" id="save-status">
+    入力内容は自動保存されています 💾
+</div>
+
+<script>
+    // 画面切り替え
+    function showStep(stepNum) {
+        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.step-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById('step' + stepNum).classList.add('active');
+        document.querySelectorAll('.step-btn')[stepNum-1].classList.add('active');
+    }
+
+    // 質問項目の追加
+    function addQuestion() {
+        const div = document.createElement('div');
+        div.className = 'question-item';
+        div.innerHTML = '<input type="text" class="q-input" placeholder="次の質問...">';
+        document.getElementById('question-area').appendChild(div);
+    }
+
+    // ローカルストレージへの自動保存機能
+    const inputs = ['target-person', 'target-reason', 'interview-memo', 'their-thought', 'my-change'];
+    
+    function saveData() {
+        const data = {};
+        inputs.forEach(id => {
+            data[id] = document.getElementById(id).value;
+        });
+        
+        const questions = [];
+        document.querySelectorAll('.q-input').forEach(input => {
+            questions.push(input.value);
+        });
+        data.questions = questions;
+
+        localStorage.setItem('interview_app_data', JSON.stringify(data));
+        
+        const status = document.getElementById('save-status');
+        status.style.opacity = '1';
+        setTimeout(() => { status.style.opacity = '0.7'; }, 1000);
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem('interview_app_data');
+        if (saved) {
+            const data = JSON.parse(saved);
+            inputs.forEach(id => {
+                if(data[id]) document.getElementById(id).value = data[id];
+            });
+            
+            if (data.questions && data.questions.length > 0) {
+                const area = document.getElementById('question-area');
+                area.innerHTML = '';
+                data.questions.forEach(q => {
+                    const div = document.createElement('div');
+                    div.className = 'question-item';
+                    div.innerHTML = `<input type="text" class="q-input" value="${q}">`;
+                    area.appendChild(div);
+                });
+            }
+        }
+    }
+
+    // 入力イベントの設定
+    document.addEventListener('input', saveData);
+    window.onload = loadData;
+</script>
+
+</body>
+</html>
