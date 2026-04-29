@@ -6,19 +6,15 @@
     <title>６年国語「聞いて、考えを深めよう」学習ナビ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- PDF生成ライブラリ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* 全体設定：モバイルの誤動作防止 */
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Zen Maru Gothic', sans-serif;
-            background-color: #e2e8f0;
-            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-            background-size: 20px 20px;
-            color: #1e293b;
+            background-color: #f0f4f8;
+            color: #1a202c;
             margin: 0;
             padding: 0;
             height: 100dvh;
@@ -27,13 +23,13 @@
             overflow: hidden;
         }
 
-        /* ボタンデザイン：3D効果 */
+        /* ボタン：視差効果（立体感） */
         .btn-3d {
             transition: all 0.1s;
             position: relative;
             top: 0;
             cursor: pointer;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
             user-select: none;
             touch-action: manipulation;
         }
@@ -42,12 +38,11 @@
             box-shadow: 0 0px 0px transparent !important;
         }
 
-        /* 編集画面のレイアウト */
         .step-content {
             display: none;
             height: 100%;
             overflow-y: auto;
-            padding: 12px;
+            padding: 15px;
             animation: fadeIn 0.2s ease-out;
         }
         .step-content.active { display: flex; flex-direction: column; }
@@ -59,22 +54,23 @@
 
         .card {
             background: white;
-            border-radius: 1rem;
+            border-radius: 1.25rem;
             padding: 1.25rem;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             border: 2px solid #e2e8f0;
-            box-shadow: 0 5px 0 rgba(203, 213, 225, 0.3);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.05);
         }
 
         textarea, input[type="text"] {
             border: 2px solid #e2e8f0;
             border-radius: 0.75rem;
-            padding: 0.6rem;
+            padding: 0.75rem;
             font-size: 1rem;
-            background: #f8fafc;
+            background: #fdfdfd;
+            width: 100%;
         }
 
         .nav-button {
@@ -82,413 +78,412 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #94a3b8;
+            color: #a0aec0;
             cursor: pointer;
-            padding: 4px 0;
+            font-size: 0.7rem;
+            font-weight: bold;
         }
-        .nav-button.active { color: #059669; }
+        .nav-button.active { color: #38a169; }
         .icon-circle {
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: #f1f5f9;
+            background: #edf2f7;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            margin-bottom: 2px;
+            transition: 0.2s;
         }
         .nav-button.active .icon-circle {
-            background: #10b981; color: white;
+            background: #48bb78;
+            color: white;
+            transform: scale(1.1);
         }
 
         .help-box {
-            background: #f0fdf4;
-            border: 2px solid #bbf7d0;
+            background: #f0fff4;
+            border: 1px solid #c6f6d5;
             border-radius: 1rem;
             padding: 0.75rem;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
-        /* --- 重要：印刷・A4「型」の設定 --- */
-        #print-container {
-            display: none;
-        }
-
-        @media print {
-            @page {
-                size: A4 portrait;
-                margin: 0;
-            }
-            body {
-                background: white;
-                height: 100%;
-                overflow: hidden !important;
-            }
-            main, nav, header, .no-print {
-                display: none !important;
-            }
-            #print-container {
-                display: block !important;
-                width: 210mm;
-                height: 297mm;
-                padding: 15mm;
-                position: fixed;
-                top: 0;
-                left: 0;
-                background: white;
-                z-index: 9999;
-                box-sizing: border-box;
-                overflow: hidden;
-            }
-            #pdf-inner {
-                width: 100%;
-                height: 100%;
-                border: 0;
-            }
-            /* 横並びの「型」を強制 */
-            .print-row {
-                display: table !important;
-                width: 100% !important;
-                table-layout: fixed !important;
-                border-spacing: 10px 0 !important;
-            }
-            .print-col {
-                display: table-cell !important;
-                vertical-align: top !important;
-                border: 1px solid #ccc !important;
-                padding: 10px !important;
-                border-radius: 8px !important;
-            }
-        }
-
-        .q-ref-item {
-            cursor: pointer;
-            border: 2px solid #e2e8f0;
+        /* 隠しテンプレート（PDF生成用：A4比率） */
+        #pdf-template {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 800px; /* キャプチャ用の基準幅 */
             background: white;
-            padding: 0.5rem;
-            margin-bottom: 0.3rem;
-            border-radius: 0.5rem;
-            font-size: 0.8rem;
-            text-align: left;
+            padding: 40px;
+            color: #000;
         }
-        .q-ref-item.active {
-            border-color: #10b981;
-            background: #ecfdf5;
-            color: #047857;
+
+        /* ローディング表示 */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2f855a;
         }
     </style>
 </head>
 <body>
 
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mb-4"></div>
+        PDFを作成しています...
+    </div>
+
     <!-- ヘッダー -->
-    <header class="bg-white border-b-4 border-gray-200 px-4 py-2 flex items-center justify-between no-print z-10">
-        <div class="flex items-center gap-3">
-            <h1 class="text-base font-bold text-emerald-600 hidden md:block">インタビュー学習ナビ</h1>
-            <input type="text" id="student-name" placeholder="なまえを入力" class="w-40 md:w-56 text-sm px-3 py-1.5 border-2 border-slate-200 rounded-lg outline-none focus:border-emerald-500" oninput="onDataInput()">
+    <header class="bg-white border-b px-4 py-2 flex items-center justify-between z-10 shadow-sm">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">👂</span>
+            <input type="text" id="student-name" placeholder="なまえを入力" class="w-32 md:w-48 text-sm px-2 py-1 border rounded focus:border-green-500 outline-none" oninput="saveAll()">
         </div>
         <div class="flex gap-2">
-            <button onclick="exportData()" class="btn-3d text-[10px] bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl font-bold">📥 保存</button>
-            <label class="btn-3d text-[10px] bg-fuchsia-50 text-fuchsia-700 px-3 py-1.5 rounded-xl font-bold cursor-pointer">
+            <button onclick="exportJSON()" class="btn-3d bg-gray-100 text-gray-700 text-[10px] px-3 py-1.5 rounded-lg font-bold">📥 保存</button>
+            <label class="btn-3d bg-gray-100 text-gray-700 text-[10px] px-3 py-1.5 rounded-lg font-bold cursor-pointer">
                 📤 復元
-                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importJSON(event)">
             </label>
         </div>
     </header>
 
-    <main class="flex-1 overflow-hidden relative no-print">
-        <!-- STEP 1 -->
+    <main class="flex-1 overflow-hidden relative">
+        <!-- STEP 1: 計画 -->
         <section id="step-1" class="step-content active">
-            <div class="card border-t-8 border-t-emerald-400">
-                <h2 class="font-bold text-emerald-700 mb-2">一．インタビューの計画</h2>
-                <div class="space-y-3 flex flex-col flex-1 overflow-y-auto">
-                    <input type="text" id="target" placeholder="相手（校長先生、地域の方など）" oninput="onDataInput()">
-                    <textarea id="goal" class="flex-1 min-h-[100px]" placeholder="目的（何を知りたいですか？）" oninput="onDataInput()"></textarea>
+            <div class="card border-t-8 border-t-green-400">
+                <h2 class="font-bold text-green-700 mb-3 text-lg">一．インタビューの計画</h2>
+                <div class="space-y-4 flex flex-col flex-1 overflow-y-auto">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">相手の名前</label>
+                        <input type="text" id="target" placeholder="例：地域ボランティアの宮田さん" oninput="saveAll()">
+                    </div>
+                    <div class="flex-1 flex flex-col">
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">知りたいこと（目的）</label>
+                        <textarea id="goal" class="flex-1" placeholder="例：どんな思いで活動しているか知りたい。" oninput="saveAll()"></textarea>
+                    </div>
                     <div class="help-box">
-                        <p class="text-[10px] font-bold text-emerald-700 mb-1">🆘 おたすけツール：目的の書き出し</p>
-                        <div class="flex flex-wrap gap-1.5">
-                            <button onclick="insertText('goal', '活動を始めたきっかけを知りたい。')" class="btn-3d text-[9px] bg-white border border-emerald-200 px-2 py-1.5 rounded-lg">きっかけ</button>
-                            <button onclick="insertText('goal', '一番大切にしている思いを知りたい。')" class="btn-3d text-[9px] bg-white border border-emerald-200 px-2 py-1.5 rounded-lg">大切にしている思い</button>
+                        <p class="text-[10px] font-bold text-green-700 mb-2">🆘 おたすけヒント</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="addText('goal', '活動を始めたきっかけを知りたい。')" class="btn-3d text-[10px] bg-white border border-green-200 px-3 py-1.5 rounded-lg">きっかけ</button>
+                            <button onclick="addText('goal', '一番大切にしている思いを知りたい。')" class="btn-3d text-[10px] bg-white border border-green-200 px-3 py-1.5 rounded-lg">大切な思い</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- STEP 2 -->
+        <!-- STEP 2: 準備 -->
         <section id="step-2" class="step-content">
-            <div class="card border-t-8 border-t-sky-400">
-                <h2 class="font-bold text-sky-700 mb-2">二．質問の準備</h2>
-                <div class="flex-1 overflow-y-auto pr-1" id="question-inputs"></div>
-                <button onclick="addQuestionField()" class="btn-3d mt-2 w-full py-3 bg-sky-50 text-sky-600 font-bold rounded-2xl">＋ 質問をふやす</button>
-                <div class="help-box border-sky-200">
-                    <p class="text-[10px] font-bold text-sky-700 mb-1">🆘 おたすけツール：質問のタネ</p>
-                    <div class="flex flex-wrap gap-1.5">
-                        <button onclick="addQuestionField('一番うれしいことは何ですか？')" class="btn-3d text-[9px] bg-white border border-sky-200 px-2 py-1.5 rounded-lg">喜び</button>
-                        <button onclick="addQuestionField('工夫や苦労していることは何ですか？')" class="btn-3d text-[9px] bg-white border border-sky-200 px-2 py-1.5 rounded-lg">工夫・苦労</button>
+            <div class="card border-t-8 border-t-blue-400">
+                <h2 class="font-bold text-blue-700 mb-3 text-lg">二．質問の準備</h2>
+                <div class="flex-1 overflow-y-auto pr-1" id="question-list"></div>
+                <button onclick="addQuestion()" class="btn-3d mt-3 w-full py-3 bg-blue-50 text-blue-600 font-bold rounded-xl border border-blue-200">＋ 質問をふやす</button>
+                <div class="help-box border-blue-200 bg-blue-50">
+                    <p class="text-[10px] font-bold text-blue-700 mb-1">🆘 質問のタネ</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="addQuestion('一番うれしいことは何ですか？')" class="btn-3d text-[10px] bg-white border border-blue-200 px-3 py-1.5 rounded-lg">喜び</button>
+                        <button onclick="addQuestion('工夫や苦労していることは何ですか？')" class="btn-3d text-[10px] bg-white border border-blue-200 px-3 py-1.5 rounded-lg">工夫・苦労</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- STEP 3 -->
+        <!-- STEP 3: 実践 -->
         <section id="step-3" class="step-content">
-            <div class="flex flex-col md:flex-row gap-3 h-full">
-                <div class="md:w-1/3 flex flex-col min-h-[120px]">
-                    <div class="card border-t-4 border-t-amber-400 overflow-hidden">
-                        <h3 class="font-bold text-slate-500 mb-1 text-xs">質問をえらぶ</h3>
-                        <div id="question-reference" class="overflow-y-auto pr-1"></div>
+            <div class="flex flex-col h-full gap-3">
+                <div class="h-1/3 min-h-[120px]">
+                    <div class="card border-t-4 border-t-orange-400 overflow-hidden">
+                        <p class="text-xs font-bold text-gray-400 mb-2">質問をえらぶ</p>
+                        <div id="q-selector" class="flex gap-2 overflow-x-auto pb-2"></div>
                     </div>
                 </div>
-                <div class="md:w-2/3 flex flex-col h-full">
+                <div class="flex-1 flex flex-col">
                     <div class="card border-t-8 border-t-rose-400">
-                        <div class="flex justify-between items-start mb-2">
-                            <h2 id="active-question-label" class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded">選んでね</h2>
-                            <div id="timer" class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded border">00:00</div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h2 id="active-q-label" class="text-sm font-bold text-rose-600 truncate mr-2">質問を選んでね</h2>
+                            <div id="timer" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">00:00</div>
                         </div>
-                        <textarea id="memo-field" class="flex-1 text-lg" placeholder="メモを入力..." oninput="onMemoInput()"></textarea>
-                        <button onclick="toggleTimer()" id="timer-btn" class="btn-3d mt-2 bg-rose-500 text-white py-2 rounded-xl text-xs font-bold">開始/停止</button>
+                        <textarea id="memo-field" class="flex-1 text-lg" placeholder="メモを入力..." oninput="saveMemo()"></textarea>
+                        <button onclick="toggleTimer()" id="t-btn" class="btn-3d mt-2 bg-rose-500 text-white py-2 rounded-xl text-xs font-bold">タイマー開始</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- STEP 4 -->
+        <!-- STEP 4: まとめ -->
         <section id="step-4" class="step-content">
             <div class="card border-t-8 border-t-indigo-500">
-                <h2 class="font-bold text-indigo-700 mb-2">四．まとめ・考えを深める</h2>
-                <div class="flex-1 flex flex-col gap-3 overflow-y-auto">
+                <h2 class="font-bold text-indigo-700 mb-3 text-lg">四．まとめ</h2>
+                <div class="flex-1 flex flex-col gap-4 overflow-y-auto">
                     <div class="flex flex-col flex-1 min-h-[120px]">
-                        <label class="text-[10px] font-bold text-slate-500 mb-1">💡 わかったこと・相手の思い</label>
-                        <textarea id="result-text" class="flex-1" placeholder="インタビューして知った相手の考えを書こう。" oninput="onDataInput()"></textarea>
+                        <label class="text-xs font-bold text-gray-500 mb-1">💡 わかったこと</label>
+                        <textarea id="summary-result" class="flex-1" oninput="saveAll()"></textarea>
                     </div>
                     <div class="flex flex-col flex-1 min-h-[120px]">
-                        <label class="text-[10px] font-bold text-slate-500 mb-1">🌱 自分の考えの変化</label>
-                        <textarea id="change-text" class="flex-1" placeholder="前と後で考えはどう変わったかな？" oninput="onDataInput()"></textarea>
-                        <button onclick="insertText('change-text', '前は〜と思っていましたが、話を聞いて〜と考えるようになりました。')" class="btn-3d text-[9px] bg-indigo-50 text-indigo-700 px-2 py-1.5 rounded-lg font-bold mt-1">文頭ヒント</button>
+                        <label class="text-xs font-bold text-gray-500 mb-1">🌱 自分の考えの変化</label>
+                        <textarea id="summary-change" class="flex-1" oninput="saveAll()"></textarea>
+                        <button onclick="addText('summary-change', '前は〜と思っていましたが、話を聞いて〜と考えるようになりました。')" class="btn-3d text-[9px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg font-bold mt-2 self-start">文頭ヒント</button>
                     </div>
                 </div>
-                <button onclick="generatePDF()" class="btn-3d w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold mt-3 shadow-lg text-lg">
-                    📄 報告書を出力（提出用）
+                <button onclick="generateDirectPDF()" class="btn-3d w-full bg-green-600 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg text-lg flex items-center justify-center gap-2">
+                    📄 報告書を保存する（PDF）
                 </button>
             </div>
         </section>
     </main>
 
-    <nav class="bg-white border-t-2 border-slate-200 px-2 py-2 flex justify-around no-print shadow-lg pb-6">
-        <button onclick="showStep(1)" class="nav-button active" id="nav-btn-1"><div class="icon-circle">1</div>計画</button>
-        <button onclick="showStep(2)" class="nav-button" id="nav-btn-2"><div class="icon-circle">2</div>準備</button>
-        <button onclick="showStep(3)" class="nav-button" id="nav-btn-3"><div class="icon-circle">3</div>実践</button>
-        <button onclick="showStep(4)" class="nav-button" id="nav-btn-4"><div class="icon-circle">4</div>まとめ</button>
+    <nav class="bg-white border-t flex justify-around py-3 pb-8 shadow-inner z-10">
+        <div onclick="setStep(1)" class="nav-button active" id="nb1"><div class="icon-circle">1</div>計画</div>
+        <div onclick="setStep(2)" class="nav-button" id="nb2"><div class="icon-circle">2</div>準備</div>
+        <div onclick="setStep(3)" class="nav-button" id="nb3"><div class="icon-circle">3</div>実践</div>
+        <div onclick="setStep(4)" class="nav-button" id="nb4"><div class="icon-circle">4</div>まとめ</div>
     </nav>
 
-    <!-- 印刷用 -->
-    <div id="print-container">
-        <div id="pdf-content"></div>
+    <!-- PDF生成用の非表示テンプレート（型） -->
+    <div id="pdf-template">
+        <div style="border-bottom: 2px solid #2f855a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <h1 style="font-size: 24pt; margin: 0; font-weight: bold; color: #2f855a;">インタビュー報告書</h1>
+            <p style="font-size: 12pt; margin: 0; border-bottom: 1px solid #000; padding: 0 10px;">なまえ：<span id="pdf-name"></span></p>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="font-size: 14pt; margin: 0 0 10px 0; color: #4a5568;">一．計画</h2>
+            <p style="margin: 5px 0;"><strong>【相手】</strong> <span id="pdf-target"></span></p>
+            <p style="margin: 5px 0;"><strong>【目的】</strong> <span id="pdf-goal"></span></p>
+        </div>
+        <div style="border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="font-size: 14pt; margin: 0 0 10px 0; color: #2f855a; border-left: 5px solid #48bb78; padding-left: 10px;">二．聞き取りの記録</h2>
+            <div id="pdf-records" style="font-size: 11pt;"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="border: 1px solid #cbd5e0; padding: 15px; border-radius: 8px; background: #ebf8ff;">
+                <h3 style="font-size: 12pt; margin: 0 0 10px 0; color: #2b6cb0;">三．わかったこと</h3>
+                <p id="pdf-result" style="font-size: 10.5pt; white-space: pre-wrap; margin: 0;"></p>
+            </div>
+            <div style="border: 1px solid #cbd5e0; padding: 15px; border-radius: 8px; background: #fff5f7;">
+                <h3 style="font-size: 12pt; margin: 0 0 10px 0; color: #9b2c2c;">四．考えの変化</h3>
+                <p id="pdf-change" style="font-size: 10.5pt; white-space: pre-wrap; margin: 0;"></p>
+            </div>
+        </div>
     </div>
 
     <script>
-        let currentStep = 1;
-        let questions = []; 
-        let questionMemos = { "-1": "" }; 
-        let activeQuestionId = "-1";
-        let timerInterval, seconds = 0, timerRunning = false;
+        let state = {
+            step: 1,
+            name: "",
+            target: "",
+            goal: "",
+            questions: [],
+            memos: {},
+            activeQId: null,
+            result: "",
+            change: ""
+        };
 
-        window.onload = () => { loadData(); };
+        let timer = { interval: null, seconds: 0, running: false };
 
-        function showStep(n) { currentStep = n; updateStepView(); }
+        // 初期化
+        window.onload = () => {
+            const saved = localStorage.getItem('interview_loiro_v10');
+            if (saved) {
+                state = JSON.parse(saved);
+                document.getElementById('student-name').value = state.name || "";
+                document.getElementById('target').value = state.target || "";
+                document.getElementById('goal').value = state.goal || "";
+                document.getElementById('summary-result').value = state.result || "";
+                document.getElementById('summary-change').value = state.change || "";
+            } else {
+                for(let i=0; i<3; i++) addQuestion();
+            }
+            renderQuestions();
+            setStep(state.step || 1);
+        };
 
-        function updateStepView() {
-            document.querySelectorAll('.step-content').forEach((el, idx) => el.classList.toggle('active', idx + 1 === currentStep));
-            document.querySelectorAll('.nav-button').forEach((btn, idx) => btn.classList.toggle('active', idx + 1 === currentStep));
-            if (currentStep === 3) updateQuestionReference();
+        function setStep(n) {
+            state.step = n;
+            document.querySelectorAll('.step-content').forEach((el, idx) => el.classList.toggle('active', idx + 1 === n));
+            document.querySelectorAll('.nav-button').forEach((btn, idx) => btn.classList.toggle('active', idx + 1 === n));
+            if (n === 3) renderQSelector();
+            saveAll();
         }
 
-        function addQuestionField(text = "") {
-            const id = "q-" + Date.now() + Math.random().toString(36).substr(2, 4);
-            questions.push({ id, text });
-            renderQuestionInputs();
-            onDataInput();
+        function addQuestion(text = "") {
+            const id = "q-" + Date.now() + Math.random().toString(36).substr(2,4);
+            state.questions.push({ id, text });
+            renderQuestions();
+            saveAll();
         }
 
-        function renderQuestionInputs() {
-            const container = document.getElementById('question-inputs');
+        function renderQuestions() {
+            const container = document.getElementById('question-list');
             container.innerHTML = "";
-            questions.forEach((q, i) => {
+            state.questions.forEach((q, i) => {
                 const div = document.createElement('div');
                 div.className = "flex gap-2 mb-2 items-center";
-                div.innerHTML = `<div class="text-[10px] font-bold w-3">${i+1}</div>
-                    <input type="text" class="flex-1 text-sm p-1.5" value="${q.text}" oninput="questions[${i}].text=this.value;onDataInput()">
-                    <button onclick="questions.splice(${i},1);renderQuestionInputs();onDataInput()" class="text-rose-400 px-2">×</button>`;
+                div.innerHTML = `<span class="font-bold text-blue-500 w-4">${i+1}</span>
+                    <input type="text" class="flex-1 p-2 border rounded" value="${q.text}" oninput="updateQ('${q.id}', this.value)">
+                    <button onclick="removeQ('${q.id}')" class="text-red-400 px-2">×</button>`;
                 container.appendChild(div);
             });
         }
 
-        function updateQuestionReference() {
-            const ref = document.getElementById('question-reference');
-            let html = `<div class="q-ref-item ${activeQuestionId === '-1' ? 'active' : ''}" onclick="selectQuestion('-1')">全体のメモ</div>`;
-            questions.forEach(q => {
+        function updateQ(id, val) {
+            const q = state.questions.find(item => item.id === id);
+            if (q) q.text = val;
+            saveAll();
+        }
+
+        function removeQ(id) {
+            state.questions = state.questions.filter(q => q.id !== id);
+            if (state.activeQId === id) state.activeQId = null;
+            renderQuestions();
+            saveAll();
+        }
+
+        function renderQSelector() {
+            const container = document.getElementById('q-selector');
+            container.innerHTML = "";
+            state.questions.forEach((q, i) => {
                 if (!q.text) return;
-                html += `<div class="q-ref-item ${activeQuestionId === q.id ? 'active' : ''}" onclick="selectQuestion('${q.id}')">${q.text}</div>`;
+                const btn = document.createElement('div');
+                btn.className = `btn-3d shrink-0 px-4 py-2 rounded-xl border-2 text-sm font-bold ${state.activeQId === q.id ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-gray-200 text-gray-500'}`;
+                btn.innerText = `問${i+1}`;
+                btn.onclick = () => selectQ(q.id);
+                container.appendChild(btn);
             });
-            ref.innerHTML = html;
+            if (!state.activeQId && state.questions.length > 0) selectQ(state.questions[0].id);
         }
 
-        function selectQuestion(id) {
-            activeQuestionId = id;
-            const label = document.getElementById('active-question-label');
-            const field = document.getElementById('memo-field');
-            if (id === "-1") label.innerText = "📋 全体のメモを記録中";
-            else {
-                const q = questions.find(item => item.id === id);
-                label.innerText = `💬 質問：${q ? q.text : ''}`;
+        function selectQ(id) {
+            state.activeQId = id;
+            const q = state.questions.find(item => item.id === id);
+            document.getElementById('active-q-label').innerText = q ? `💬 問：${q.text}` : "選んでね";
+            document.getElementById('memo-field').value = state.memos[id] || "";
+            renderQSelector();
+        }
+
+        function saveMemo() {
+            if (state.activeQId) {
+                state.memos[state.activeQId] = document.getElementById('memo-field').value;
+                saveAll();
             }
-            field.value = questionMemos[id] || "";
-            updateQuestionReference();
-        }
-
-        function onMemoInput() { 
-            questionMemos[activeQuestionId] = document.getElementById('memo-field').value; 
-            onDataInput(); 
-        }
-
-        function onDataInput() {
-            const data = {
-                name: document.getElementById('student-name').value,
-                target: document.getElementById('target').value,
-                goal: document.getElementById('goal').value,
-                result: document.getElementById('result-text').value,
-                change: document.getElementById('change-text').value,
-                questions, questionMemos, activeQuestionId
-            };
-            localStorage.setItem('kiite_loilo_final', JSON.stringify(data));
-        }
-
-        function loadData() {
-            const saved = localStorage.getItem('kiite_loilo_final');
-            if (!saved) { if(questions.length===0) for(let i=0; i<3; i++) addQuestionField(); updateStepView(); return; }
-            try {
-                const data = JSON.parse(saved);
-                document.getElementById('student-name').value = data.name || '';
-                document.getElementById('target').value = data.target || '';
-                document.getElementById('goal').value = data.goal || '';
-                document.getElementById('result-text').value = data.result || '';
-                document.getElementById('change-text').value = data.change || '';
-                questions = data.questions || [];
-                questionMemos = data.questionMemos || { "-1": "" };
-                activeQuestionId = data.activeQuestionId || "-1";
-                renderQuestionInputs();
-                updateStepView();
-                selectQuestion(activeQuestionId);
-            } catch(e) { console.error(e); }
-        }
-
-        function generatePDF() {
-            onDataInput();
-            const data = JSON.parse(localStorage.getItem('kiite_loilo_final'));
-            const container = document.getElementById('print-container');
-            const content = document.getElementById('pdf-content');
-            
-            let qAndA = "";
-            data.questions.forEach((q, i) => {
-                if (!q.text.trim()) return;
-                qAndA += `<div style="margin-bottom: 8px; border-bottom: 1px dotted #ccc; padding-bottom: 4px; overflow: hidden; word-break: break-all;">
-                    <p style="font-weight: bold; margin: 0; color: #047857; font-size: 11pt;">問 ${i+1}: ${q.text}</p>
-                    <p style="margin: 4px 0 0 20px; font-size: 10.5pt; color: #1e293b;">答： ${data.questionMemos[q.id] || '（なし）'}</p>
-                </div>`;
-            });
-
-            // 型にはめる（A4サイズ物理固定レイアウト）
-            content.innerHTML = `
-                <div id="pdf-inner" style="line-height: 1.5; color: #0f172a; width: 100%; box-sizing: border-box; text-align: left; font-family: sans-serif;">
-                    <!-- タイトル -->
-                    <div style="border-bottom: 3px solid #10b981; padding-bottom: 5px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
-                        <h1 style="font-size: 20pt; margin: 0; font-weight: bold; color: #064e3b;">インタビュー報告書</h1>
-                        <p style="font-size: 12pt; margin: 0; font-weight: bold;">氏名：<span style="display:inline-block; min-width:140px; border-bottom:1.5px solid #000; padding: 0 10px; text-align: center;">${data.name || '　　　　　'}</span></p>
-                    </div>
-
-                    <!-- 一．計画 -->
-                    <div style="background: #f8fafc; border: 2.5px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 11pt;">
-                        <p style="margin:4px 0; word-break: break-all;"><strong>【相手】</strong> ${data.target || '（未入力）'}</p>
-                        <p style="margin:4px 0; word-break: break-all;"><strong>【目的】</strong> ${data.goal || '（未入力）'}</p>
-                    </div>
-
-                    <!-- 二．記録 -->
-                    <div style="border: 2.5px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 15px; min-height: 200px;">
-                        <h2 style="font-size: 13pt; margin: 0 0 10px 0; color: #047857; border-left: 6px solid #10b981; padding-left: 12px; font-weight: bold;">二．聞き取りの記録</h2>
-                        ${qAndA}
-                        ${data.questionMemos["-1"] ? `<p style="font-size: 9pt; color: #64748b; margin-top: 10px; font-style: italic;">全体メモ： ${data.questionMemos["-1"]}</p>` : ''}
-                    </div>
-
-                    <!-- 三・四．まとめ（横並びを絶対に維持） -->
-                    <div class="print-row">
-                        <div class="print-col" style="background: #eff6ff;">
-                            <h3 style="font-size: 11pt; margin: 0 0 8px 0; color: #1e40af; border-bottom: 1.5px solid #bfdbfe; font-weight: bold;">三．わかったこと</h3>
-                            <p style="white-space: pre-wrap; font-size: 10pt; margin: 0; word-break: break-all;">${data.result || '（未入力）'}</p>
-                        </div>
-                        <div class="print-col" style="background: #fdf4ff;">
-                            <h3 style="font-size: 11pt; margin: 0 0 8px 0; color: #be185d; border-bottom: 1.5px solid #fbcfe8; font-weight: bold;">四．自分の考えの変化</h3>
-                            <p style="white-space: pre-wrap; font-size: 10pt; margin: 0; word-break: break-all;">${data.change || '（未入力）'}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            container.style.display = "block";
-            const inner = document.getElementById('pdf-inner');
-            const maxHeight = 940; // A4一枚分
-            let fontSize = 11;
-            inner.style.fontSize = fontSize + "pt";
-
-            // はみ出る場合は文字を小さくする
-            while (inner.scrollHeight > maxHeight && fontSize > 6) {
-                fontSize -= 0.1;
-                inner.style.fontSize = fontSize + "pt";
-            }
-            
-            setTimeout(() => {
-                window.print();
-                container.style.display = "none";
-            }, 200);
         }
 
         function toggleTimer() {
-            const btn = document.getElementById('timer-btn');
-            if (timerRunning) { clearInterval(timerInterval); btn.textContent = 'タイマー開始'; }
-            else {
-                timerInterval = setInterval(() => {
-                    seconds++;
-                    const m = Math.floor(seconds/60).toString().padStart(2,'0'), s=(seconds%60).toString().padStart(2,'0');
-                    document.getElementById('timer').textContent = `${m}:${s}`;
+            const btn = document.getElementById('t-btn');
+            if (timer.running) {
+                clearInterval(timer.interval);
+                btn.innerText = "タイマー再開";
+            } else {
+                timer.interval = setInterval(() => {
+                    timer.seconds++;
+                    const m = Math.floor(timer.seconds/60).toString().padStart(2,'0');
+                    const s = (timer.seconds%60).toString().padStart(2,'0');
+                    document.getElementById('timer').innerText = `${m}:${s}`;
                 }, 1000);
-                btn.textContent = '停止';
+                btn.innerText = "タイマー停止";
             }
-            timerRunning = !timerRunning;
+            timer.running = !timer.running;
         }
 
-        function insertText(id, text) {
+        function saveAll() {
+            state.name = document.getElementById('student-name').value;
+            state.target = document.getElementById('target').value;
+            state.goal = document.getElementById('goal').value;
+            state.result = document.getElementById('summary-result').value;
+            state.change = document.getElementById('summary-change').value;
+            localStorage.setItem('interview_loilo_v10', JSON.stringify(state));
+        }
+
+        function addText(id, txt) {
             const el = document.getElementById(id);
-            if (el.value && !el.value.endsWith('\n')) el.value += '\n';
-            el.value += text; onDataInput(); el.focus();
+            if (el.value) el.value += "\n";
+            el.value += txt;
+            saveAll();
         }
 
-        function exportData() {
-            onDataInput();
-            const blob = new Blob([localStorage.getItem('kiite_loilo_final')], { type: 'application/json' });
+        // --- PDF生成ロジック（jsPDF + html2canvas） ---
+        async function generateDirectPDF() {
+            saveAll();
+            const loading = document.getElementById('loading-overlay');
+            loading.style.display = 'flex';
+
+            // テンプレートにデータを流し込む
+            document.getElementById('pdf-name').innerText = state.name || "（未記入）";
+            document.getElementById('pdf-target').innerText = state.target || "（未入力）";
+            document.getElementById('pdf-goal').innerText = state.goal || "（未入力）";
+            document.getElementById('pdf-result').innerText = state.result || "（未入力）";
+            document.getElementById('pdf-change').innerText = state.change || "（未入力）";
+
+            let recHTML = "";
+            state.questions.forEach((q, i) => {
+                if (!q.text.trim()) return;
+                recHTML += `<div style="margin-bottom:10px; border-bottom: 1px dotted #ccc; padding-bottom:5px;">
+                    <p style="font-weight:bold; color:#2f855a; margin:0;">問${i+1}．${q.text}</p>
+                    <p style="margin:2px 0 0 20px;">答：${state.memos[q.id] || '（なし）'}</p>
+                </div>`;
+            });
+            document.getElementById('pdf-records').innerHTML = recHTML;
+
+            // html2canvasで画像化
+            const template = document.getElementById('pdf-template');
+            
+            try {
+                const canvas = await html2canvas(template, {
+                    scale: 2, // 高解像度
+                    useCORS: true,
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                
+                const finalWidth = imgWidth * ratio;
+                const finalHeight = imgHeight * ratio;
+                const x = (pdfWidth - finalWidth) / 2;
+                const y = 0;
+
+                pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+                pdf.save(`インタビュー報告書_${state.name || '学習記録'}.pdf`);
+            } catch (err) {
+                alert("PDFの作成に失敗しました。ブラウザの設定を確認してください。");
+                console.error(err);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function exportJSON() {
+            const blob = new Blob([localStorage.getItem('interview_loilo_v10')], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `インタビュー記録.json`;
+            a.download = `インタビューデータ.json`;
             a.click();
         }
 
-        function importData(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        function importJSON(e) {
             const reader = new FileReader();
             reader.onload = (re) => {
-                localStorage.setItem('kiite_loilo_final', re.target.result);
-                loadData();
+                localStorage.setItem('interview_loilo_v10', re.target.result);
+                location.reload();
             };
-            reader.readAsText(file);
+            reader.readAsText(e.target.files[0]);
         }
     </script>
 </body>
